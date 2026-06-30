@@ -81,43 +81,11 @@ Multi-Center X-ray Datasets
             ▼
  Osteoporosis Prediction
 ```
-
----
-
-## 📂 Project Structure
-
-```
-Generalizable-Osteoporosis-Detection/
-
-│── README.md
-│── Proposal/
-│     ├── Project_Proposal.docx
-│     └── Project_Proposal.pdf
-│
-│── Literature/
-│     └── Research Papers
-│
-│── Datasets/
-│     └── Dataset Links
-│
-│── Notebook/
-│     └── Training.ipynb
-│
-│── Models/
-│
-│── Results/
-│
-│── Images/
-│
-└── References/
-```
-
 ---
 
 ## 📊 Datasets (Planned)
 
 - Lumbar Spine Osteoporosis (LSO) X-ray Dataset
-- Mendeley Osteoporosis Dataset
 - Kaggle Osteoporosis X-ray Dataset
 - Additional publicly available multi-center datasets
 
@@ -129,7 +97,7 @@ Generalizable-Osteoporosis-Detection/
 - Python
 
 ### Deep Learning Framework
-- TensorFlow / PyTorch
+- PyTorch
 
 ### Image Processing
 - OpenCV
@@ -179,7 +147,6 @@ Recent literature from:
 - IEEE Xplore
 - Springer
 - Elsevier
-- Nature
 - PubMed
 
 ---
