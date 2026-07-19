@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import './App.css'
 
 const API_URL = 'http://localhost:8000'
@@ -11,15 +11,16 @@ function App() {
   const [error, setError] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [apiOnline, setApiOnline] = useState(false)
+  const [showResults, setShowResults] = useState(false)
   const fileInputRef = useRef(null)
 
   // Check API health on mount
-  useState(() => {
+  useEffect(() => {
     fetch(`${API_URL}/api/health`)
       .then((res) => res.json())
       .then((data) => setApiOnline(data.model_ready))
       .catch(() => setApiOnline(false))
-  })
+  }, [])
 
   // Handle file selection
   const handleFileSelect = useCallback((file) => {
@@ -32,6 +33,7 @@ function App() {
     setPreviewUrl(URL.createObjectURL(file))
     setResult(null)
     setError(null)
+    setShowResults(false)
   }, [])
 
   // Drag & drop handlers
@@ -44,12 +46,15 @@ function App() {
     setDragging(false)
   }, [])
 
-  const handleDrop = useCallback((e) => {
-    e.preventDefault()
-    setDragging(false)
-    const file = e.dataTransfer.files[0]
-    handleFileSelect(file)
-  }, [handleFileSelect])
+  const handleDrop = useCallback(
+    (e) => {
+      e.preventDefault()
+      setDragging(false)
+      const file = e.dataTransfer.files[0]
+      handleFileSelect(file)
+    },
+    [handleFileSelect]
+  )
 
   // Remove selected image
   const handleRemove = useCallback(() => {
@@ -57,6 +62,7 @@ function App() {
     setPreviewUrl(null)
     setResult(null)
     setError(null)
+    setShowResults(false)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }, [])
 
@@ -67,6 +73,7 @@ function App() {
     setLoading(true)
     setError(null)
     setResult(null)
+    setShowResults(false)
 
     try {
       const formData = new FormData()
@@ -84,6 +91,7 @@ function App() {
 
       const data = await response.json()
       setResult(data)
+      setShowResults(true)
     } catch (err) {
       setError(err.message || 'Failed to connect to the API server.')
     } finally {
@@ -93,29 +101,107 @@ function App() {
 
   return (
     <div className="app">
+      {/* ── Animated Background ── */}
+      <div className="bg-effects">
+        <div className="orb orb-1"></div>
+        <div className="orb orb-2"></div>
+        <div className="orb orb-3"></div>
+        <div className="grid-overlay"></div>
+      </div>
+
       {/* ── Header ── */}
       <header className="header">
         <div className="header-brand">
-          <div className="header-icon">🦴</div>
+          <div className="header-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                fill="url(#iconGrad)"
+              />
+              <defs>
+                <linearGradient id="iconGrad" x1="2" y1="2" x2="22" y2="22">
+                  <stop stopColor="#60a5fa" />
+                  <stop offset="1" stopColor="#06b6d4" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
           <div>
-            <div className="header-title">Osteoporosis Detection</div>
-            <div className="header-subtitle">MobileNetV4 + Vision Transformer</div>
+            <div className="header-title">OsteoAI</div>
+            <div className="header-subtitle">
+              Dual-Branch Deep Learning Analysis
+            </div>
           </div>
         </div>
-        <div className="header-status">
-          <div className={`status-dot ${apiOnline ? '' : 'offline'}`}></div>
-          {apiOnline ? 'Model Ready' : 'API Offline'}
-        </div>
+        <nav className="header-nav">
+          <div className="nav-chip">
+            <span className="chip-dot blue"></span>
+            MobileNetV4
+          </div>
+          <div className="nav-chip">
+            <span className="chip-dot purple"></span>
+            ViT
+          </div>
+          <div className={`header-status ${apiOnline ? 'online' : ''}`}>
+            <div
+              className={`status-dot ${apiOnline ? '' : 'offline'}`}
+            ></div>
+            {apiOnline ? 'Model Ready' : 'API Offline'}
+          </div>
+        </nav>
       </header>
 
+      {/* ── Hero Section ── */}
+      <section className="hero">
+        <div className="hero-content">
+          <div className="hero-badge">AI-Powered Diagnostics</div>
+          <h1 className="hero-title">
+            Lumbar Spine
+            <br />
+            <span className="gradient-text">Osteoporosis Detection</span>
+          </h1>
+          <p className="hero-desc">
+            Upload a lumbar spine X-ray image for instant AI analysis using our
+            dual-branch architecture combining local bone texture features with
+            global structural pattern recognition.
+          </p>
+          <div className="hero-stats">
+            
+          </div>
+        </div>
+      </section>
+
       {/* ── Main Content ── */}
-      <main className="main-content">
+      <main className="main-content" id="analyze">
+        <div className="section-header">
+          <h2 className="section-title">X-ray Analysis</h2>
+          <p className="section-desc">
+            Upload your lumbar spine X-ray for instant classification
+          </p>
+        </div>
+
         <div className="content-grid">
           {/* ── Left Column: Upload ── */}
-          <div className="card">
+          <div className="card card-upload">
             <div className="card-header">
-              <div className="card-icon">📤</div>
-              <div className="card-title">Upload X-ray Image</div>
+              <div className="card-icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                </svg>
+              </div>
+              <div>
+                <div className="card-title">Upload Image</div>
+                <div className="card-subtitle">
+                  Drag & drop or click to browse
+                </div>
+              </div>
             </div>
 
             {!previewUrl ? (
@@ -126,13 +212,35 @@ function App() {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
               >
-                <div className="upload-icon">🩻</div>
+                <div className="upload-icon-wrapper">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    className="upload-svg"
+                  >
+                    <rect
+                      x="3"
+                      y="3"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                </div>
                 <div className="upload-text">
-                  Drag & drop your X-ray image here
+                  Drop your X-ray image here
                 </div>
                 <div className="upload-hint">
-                  or click to browse — Supports JPG, PNG, BMP, TIFF
+                  Supports JPG, PNG, BMP, TIFF
                 </div>
+                <div className="upload-btn-small">Browse Files</div>
               </div>
             ) : (
               <div className="upload-zone has-image">
@@ -142,9 +250,31 @@ function App() {
                     alt="Uploaded X-ray"
                     className="preview-image"
                   />
-                  <button className="remove-btn" onClick={handleRemove}>
-                    ✕
+                  <button
+                    className="remove-btn"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleRemove()
+                    }}
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                   </button>
+                  <div className="image-info">
+                    <span className="image-name">{selectedFile?.name}</span>
+                    <span className="image-size">
+                      {(selectedFile?.size / 1024).toFixed(1)} KB
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
@@ -165,72 +295,123 @@ function App() {
               {loading ? (
                 <>
                   <div className="spinner"></div>
-                  Analyzing...
+                  Analyzing X-ray...
                 </>
               ) : (
-                <>🔬 Analyze X-ray</>
+                <>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  Analyze X-ray
+                </>
               )}
             </button>
-
-            {/* How it works */}
-            <div className="info-panel">
-              <h4>How It Works</h4>
-              <ul className="info-steps">
-                <li>
-                  <span className="step-num">1</span>
-                  Image enhanced with CLAHE contrast & Gaussian denoising
-                </li>
-                <li>
-                  <span className="step-num">2</span>
-                  MobileNetV4 extracts local bone texture features
-                </li>
-                <li>
-                  <span className="step-num">3</span>
-                  Vision Transformer captures global structural patterns
-                </li>
-                <li>
-                  <span className="step-num">4</span>
-                  Dual-branch fusion produces the final prediction
-                </li>
-              </ul>
-            </div>
           </div>
 
           {/* ── Right Column: Results ── */}
-          <div className="card">
+          <div className="card card-results">
             <div className="card-header">
-              <div className="card-icon">📊</div>
-              <div className="card-title">Analysis Results</div>
+              <div className="card-icon results-icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M18 20V10M12 20V4M6 20v-6" />
+                </svg>
+              </div>
+              <div>
+                <div className="card-title">Analysis Results</div>
+                <div className="card-subtitle">Classification output</div>
+              </div>
             </div>
 
             {error && (
               <div className="error-message">
-                <span>⚠️</span>
-                {error}
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>{error}</span>
               </div>
             )}
 
-            {result && result.success ? (
+            {showResults && result?.success ? (
               <div className="result-section">
                 {/* Prediction Badge */}
                 <div
-                  className={`prediction-badge ${
+                  className={`prediction-card ${
                     result.prediction.class === 'Normal'
                       ? 'normal'
                       : 'osteoporosis'
                   }`}
                 >
-                  <span className="prediction-badge-icon">
-                    {result.prediction.class === 'Normal' ? '✅' : '⚠️'}
-                  </span>
-                  {result.prediction.class}
+                  <div className="prediction-icon-large">
+                    {result.prediction.class === 'Normal' ? (
+                      <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                        <line x1="12" y1="9" x2="12" y2="13" />
+                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="prediction-text">
+                    <div className="prediction-label">Diagnosis</div>
+                    <div className="prediction-class">
+                      {result.prediction.class}
+                    </div>
+                  </div>
+                  <div className="prediction-confidence">
+                    {result.prediction.confidence}%
+                  </div>
                 </div>
 
-                {/* Confidence Scores */}
+                {/* Score Bars */}
                 <div className="scores-container">
                   <div className="score-item">
                     <div className="score-label-row">
-                      <span className="score-label">Normal</span>
+                      <div className="score-label-group">
+                        <span className="score-dot green"></span>
+                        <span className="score-label">Normal</span>
+                      </div>
                       <span className="score-value green">
                         {result.prediction.normal_score}%
                       </span>
@@ -238,14 +419,19 @@ function App() {
                     <div className="score-bar-track">
                       <div
                         className="score-bar-fill green"
-                        style={{ width: `${result.prediction.normal_score}%` }}
+                        style={{
+                          width: `${result.prediction.normal_score}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
 
                   <div className="score-item">
                     <div className="score-label-row">
-                      <span className="score-label">Osteoporosis</span>
+                      <div className="score-label-group">
+                        <span className="score-dot red"></span>
+                        <span className="score-label">Osteoporosis</span>
+                      </div>
                       <span className="score-value red">
                         {result.prediction.osteoporosis_score}%
                       </span>
@@ -264,8 +450,27 @@ function App() {
                 {/* Preprocessed Image */}
                 {result.preprocessed_image && (
                   <div className="preprocessed-section">
-                    <div className="preprocessed-title">
-                      Preprocessed Image (CLAHE + Denoised)
+                    <div className="preprocessed-header">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <rect
+                          x="3"
+                          y="3"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          ry="2"
+                        />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                      <span>Preprocessed (CLAHE + Denoised)</span>
                     </div>
                     <img
                       src={`data:image/png;base64,${result.preprocessed_image}`}
@@ -278,27 +483,142 @@ function App() {
             ) : (
               !error && (
                 <div className="empty-state">
-                  <div className="empty-icon">🩻</div>
-                  <div className="empty-text">No results yet</div>
+                  <div className="empty-icon-wrapper">
+                    <svg
+                      width="56"
+                      height="56"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1"
+                      className="empty-svg"
+                    >
+                      <rect
+                        x="3"
+                        y="3"
+                        width="18"
+                        height="18"
+                        rx="2"
+                        ry="2"
+                      />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                  </div>
+                  <div className="empty-text">Awaiting Analysis</div>
                   <div className="empty-hint">
-                    Upload an X-ray image and click Analyze
+                    Upload an X-ray image and click Analyze to get started
                   </div>
                 </div>
               )
             )}
           </div>
         </div>
+
+        {/* ── Pipeline Section ── */}
+        <div className="pipeline-section">
+          <h3 className="pipeline-title">Analysis Pipeline</h3>
+          <div className="pipeline-grid">
+            <div className="pipeline-step">
+              <div className="pipeline-num">01</div>
+              <div className="pipeline-icon-box">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M3 9h18M9 21V9" />
+                </svg>
+              </div>
+              <h4>CLAHE Enhancement</h4>
+              <p>Adaptive contrast enhancement on the luminance channel</p>
+            </div>
+            <div className="pipeline-connector">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+            <div className="pipeline-step">
+              <div className="pipeline-num">02</div>
+              <div className="pipeline-icon-box">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+              </div>
+              <h4>MobileNetV4</h4>
+              <p>Local bone texture feature extraction</p>
+            </div>
+            <div className="pipeline-connector">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+            <div className="pipeline-step">
+              <div className="pipeline-num">03</div>
+              <div className="pipeline-icon-box">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                </svg>
+              </div>
+              <h4>Vision Transformer</h4>
+              <p>Global structural pattern recognition</p>
+            </div>
+            <div className="pipeline-connector">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+            <div className="pipeline-step">
+              <div className="pipeline-num">04</div>
+              <div className="pipeline-icon-box">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+              </div>
+              <h4>Fusion & Classify</h4>
+              <p>Combined prediction with confidence score</p>
+            </div>
+          </div>
+        </div>
       </main>
 
       {/* ── Footer ── */}
       <footer className="footer">
-        <div className="footer-text">
-          Dual-Branch Architecture:{' '}
-          <span className="footer-highlight">MobileNetV4</span> (local texture) +{' '}
-          <span className="footer-highlight">ViT</span> (global structure)
-          <br />
-          For research and educational purposes only. Not a medical diagnostic
-          tool.
+        <div className="footer-inner">
+          <div className="footer-brand">OsteoAI</div>
+          <div className="footer-text">
+            Dual-Branch Architecture:{' '}
+            <span className="footer-highlight">MobileNetV4</span> +{' '}
+            <span className="footer-highlight">ViT</span> | For research
+            purposes only
+          </div>
         </div>
       </footer>
     </div>
