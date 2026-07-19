@@ -104,24 +104,18 @@ async def health_check():
     }
 
 
+
+
+
 @app.post("/api/predict")
 async def predict(file: UploadFile = File(...)):
     """
     Predict osteoporosis from an uploaded X-ray image.
-
-    Returns:
-        JSON with prediction class, confidence, probability,
-        and the preprocessed image as base64.
     """
-    # Validate file type
     allowed_types = {"image/jpeg", "image/png", "image/bmp", "image/tiff", "image/webp"}
     if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid file type: {file.content_type}. Allowed: {allowed_types}",
-        )
+        raise HTTPException(status_code=400, detail=f"Invalid file type.")
 
-    # Save uploaded file to a temp location
     contents = await file.read()
     suffix = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
 
