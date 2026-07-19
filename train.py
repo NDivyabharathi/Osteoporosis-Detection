@@ -317,7 +317,7 @@ def train(
     plot_confusion_matrix(test_metrics["y_true"], test_metrics["y_pred"], save_dir=save_dir)
 
     print("\n[INFO] All outputs saved to:", save_dir)
-    print("[INFO] Done! ✓")
+    print("[INFO] Done! [SUCCESS]")
 
 
 # ─────────────────────────────────────────────
