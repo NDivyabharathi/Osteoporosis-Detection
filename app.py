@@ -8,6 +8,7 @@ with confidence scores and preprocessed image previews.
 Usage:
     python app.py
 
+
 The app will launch on http://localhost:7860
 """
 
