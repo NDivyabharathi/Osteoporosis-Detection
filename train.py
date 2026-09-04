@@ -4,6 +4,7 @@ train.py — Training script for the Dual-Branch Osteoporosis Detection Model.
 Usage:
     python train.py --data_dir ./data --epochs 40 --batch_size 16 --lr 1e-4
 
+
 Features:
   - BCEWithLogitsLoss for numerically stable binary classification
   - Adam optimiser with weight decay
