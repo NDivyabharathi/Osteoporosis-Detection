@@ -184,6 +184,7 @@ class OsteoporosisDataset(Dataset):
                 print(f"[WARNING] Class folder not found: {class_dir}")
                 continue
 
+          
             for fname in sorted(os.listdir(class_dir)):
                 ext = os.path.splitext(fname)[1].lower()
                 if ext in valid_ext:
